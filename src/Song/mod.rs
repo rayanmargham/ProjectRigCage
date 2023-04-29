@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use super::Conductor::BPMChangeEvent;
 use std::fs;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct sectionNote
