@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use super::Song::SwagSong;
+use crate::Song::SwagSong;
 
 pub struct BPMChangeEvent 
 {
