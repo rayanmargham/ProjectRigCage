@@ -17,7 +17,7 @@ fn main() {
         .run();
 }
 
-fn spawn_world(mut commands: Commands, mut meshs: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
+fn spawn_world(mut commands: Commands, mut meshs: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>, asset_server: Res<AssetServer>) {
     commands.spawn(PbrBundle {
         mesh: meshs.add(shape::Cube { size: 1.0 }.into()),
         transform: Transform::from_xyz(0.0, 0.0, -5.0),
@@ -25,6 +25,23 @@ fn spawn_world(mut commands: Commands, mut meshs: ResMut<Assets<Mesh>>, mut mate
         ..default()
     });
     commands.spawn(Camera3dBundle::default());
+    let font = asset_server.load("fonts/pixel.otf");
+
+    commands.spawn(TextBundle::from_section("Hello World!", TextStyle { font: font.clone(), font_size: 50.0, color: Color::WHITE })
+        .with_style(
+            Style
+            {
+                position_type: PositionType::Absolute,
+                position: UiRect
+                {
+                    top: ,
+                    left: Val::Px(15.0),
+                    ..default()
+                },
+                ..default()
+            }
+        ));
+
 }
 
 fn test_conductor(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>, mut conduct: ResMut<Conductor::Conductor>)
