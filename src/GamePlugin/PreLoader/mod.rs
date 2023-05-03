@@ -71,7 +71,7 @@ pub fn PreLoaderInit(
     mut settings: ResMut<bevy_framepace::FramepaceSettings>,
 )
 {
-    settings.limiter = bevy_framepace::Limiter::from_framerate(144.0);
+    settings.limiter = bevy_framepace::Limiter::from_framerate(24.0);
     let tween = Tween::new(EaseFunction::SineInOut, Duration::from_millis(1000), TransformScaleLens {start: Vec3::new(1.0, 1.0, 1.0), end: Vec3::new(2., 2., 2.)});
     let tween2 = Tween::new(EaseFunction::SineInOut, Duration::from_millis(900), SpriteColorLens {start: Color::rgba(1., 1., 1., 1.), end: Color::rgba(1., 1., 1., 0.)});
     // Spawn a Basic Camera, Nothing Fancy just for UI
