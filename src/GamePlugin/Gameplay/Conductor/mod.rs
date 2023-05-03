@@ -90,7 +90,7 @@ impl Conductor
         for i in 0..self.bpmChangeMap.len()
         {
             let MapInQuestion: &BPMChangeEvent = &self.bpmChangeMap[i];
-            if (MapInQuestion.stepTime <= step)
+            if MapInQuestion.stepTime <= step
             {
                 lastChange.stepTime = MapInQuestion.stepTime;
                 lastChange.songTime = MapInQuestion.songTime;
@@ -233,16 +233,23 @@ impl Conductor
                     writer.send(ConductorEvent(ConductorEvents::BeatHit));
                 }
             }
+            // I HATE PARTIALEQ 
+            // GET OUT OF MY HEAD GET OUT OF MY HEAD GET OUT OF MY HEAD GET OUT OF MY HEAD GET OUT OF MY HEAD GET OUT OF M YHEAD GET OUT OF MY HEAD
+            match self.song {
+                Some(_) =>
+                {
+                    if oldStep < self.curStep
+                    {
+                        self.updateSection()
+                    }
+                    else 
+                    {
+                        self.rollbackSection()
+                    }
+                }
+                _ => {}
+            }
             
-
-            if oldStep < self.curStep
-            {
-                self.updateSection()
-            }
-            else 
-            {
-                self.rollbackSection()
-            }
         }
     }
     
