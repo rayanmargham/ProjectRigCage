@@ -42,7 +42,7 @@ pub struct XML
     subtexture: Vec<SubTexture>
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Offsets
 {
     pub offsets_vec: Vec<Vec2>
@@ -87,14 +87,9 @@ impl SpriteXMLBundle
                             let name = &texture.name;
 
                             let rect = Rect::new(texture.x as f32, texture.y as f32, texture.x as f32 + texture.width as f32, texture.y as f32 + texture.height as f32);
-                            if texture.frameX != 0
-                            {
-                                temp_offsets.offsets_vec.push(Vec2::new(texture.frameX as f32, texture.frameY as f32));
-                            }
-                            else 
-                            {
-                                temp_offsets.offsets_vec.push(Vec2::new(0.0, 0.0));
-                            }
+
+                            temp_offsets.offsets_vec.push(Vec2::new(-texture.frameX as f32, texture.frameY as f32));
+
                             modify.add_texture(rect);
                         }
                         // All done!
@@ -129,10 +124,10 @@ impl SpriteXML
         if index < self.offsets.offsets_vec.len() - 1
         {
             // it's in bounds add ze offset
-            let offset = self.offsets.offsets_vec[index];
+            let offset = self.offsets.offsets_vec[index + 1];
             if index != 0
             {
-                translation.translation -= Vec3::new(self.offsets.offsets_vec[index - 1].x, self.offsets.offsets_vec[index - 1].y, 0.0);
+                translation.translation -= Vec3::new(self.offsets.offsets_vec[index].x, self.offsets.offsets_vec[index].y, 0.0);
             }
             sprite.index += 1;
             translation.translation += Vec3::new(offset.x, offset.y, 0.0);
