@@ -79,9 +79,9 @@ impl SpriteXMLBundle {
                         for texture in xml.subtexture.iter() {
                             let name = &texture.name;
 
-                            if !name.starts_with("boyfriend attack") {
-                                continue;
-                            }
+                            // if !name.starts_with("BF idle dance") {
+                            //     continue;
+                            // }
 
                             let rect = Rect::new(
                                 texture.x as f32,
@@ -90,9 +90,10 @@ impl SpriteXMLBundle {
                                 texture.y as f32 + texture.height as f32,
                             );
 
-                            temp_offsets
-                                .offsets_vec
-                                .push(Vec2::new(-texture.frameX as f32, texture.frameY as f32));
+                            temp_offsets.offsets_vec.push(Vec2::new(
+                                -texture.frameX as f32 / 2f32,
+                                texture.frameY as f32 / 2f32,
+                            ));
 
                             modify.add_texture(rect);
                         }
@@ -120,30 +121,25 @@ impl SpriteXMLBundle {
 
 impl SpriteXML {
     pub fn get_next_frame(&mut self, sprite: &mut TextureAtlasSprite, translation: &mut Transform) {
-        let index = sprite.index;
-
-        if index >= self.offsets.offsets_vec.len() - 1 {
-            sprite.index = 0;
-
-            translation.translation -= Vec3::new(
-                self.offsets.offsets_vec[self.offsets.offsets_vec.len() - 1].x,
-                self.offsets.offsets_vec[self.offsets.offsets_vec.len() - 1].y,
-                0.0,
-            );
-        }
-
-        // it's in bounds add ze offset
-        let offset = self.offsets.offsets_vec[index];
-
-        if index != 0 {
-            translation.translation -= Vec3::new(
-                self.offsets.offsets_vec[index - 1].x,
-                self.offsets.offsets_vec[index - 1].y,
-                0.0,
-            );
-        }
-
+        // this makes more readable code i guess!!!
+        let total_frames: usize = self.offsets.offsets_vec.len();
+        let last_index: usize = sprite.index;
         sprite.index += 1;
+
+        // no dumb overflow errors!!! + looping ig
+        if last_index >= total_frames - 1 {
+            sprite.index = 0;
+        }
+
+        // remove old offset lmao!!!
+        translation.translation -= Vec3::new(
+            self.offsets.offsets_vec[last_index].x,
+            self.offsets.offsets_vec[last_index].y,
+            0.0,
+        );
+
+        // add new offset :cool:
+        let offset: Vec2 = self.offsets.offsets_vec[sprite.index];
         translation.translation += Vec3::new(offset.x, offset.y, 0.0);
     }
 }
