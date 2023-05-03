@@ -37,7 +37,7 @@ pub struct XML {
     subtexture: Vec<SubTexture>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Offsets {
     pub offsets_vec: Vec<Vec2>,
 }
