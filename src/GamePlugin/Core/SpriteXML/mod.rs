@@ -67,7 +67,7 @@ impl SpriteXMLBundle {
                 let xml: Result<XML, serde_xml_rs::Error> = from_str(&x);
                 match xml {
                     Ok(xml) => {
-                        let sheet_bundle = SpriteSheetBundle {
+                        let mut sheet_bundle = SpriteSheetBundle {
                             sprite: TextureAtlasSprite::new(0),
                             texture_atlas: atlas_handle.clone(),
                             ..default()
@@ -79,9 +79,9 @@ impl SpriteXMLBundle {
                         for texture in xml.subtexture.iter() {
                             let name = &texture.name;
 
-                            // if !name.starts_with("BF idle dance") {
-                            //     continue;
-                            // }
+                            if !name.starts_with("BF idle dance") {
+                                continue;
+                            }
 
                             let rect = Rect::new(
                                 texture.x as f32,
@@ -130,16 +130,16 @@ impl SpriteXML {
         if last_index >= total_frames - 1 {
             sprite.index = 0;
         }
-
+        
         // remove old offset lmao!!!
         translation.translation -= Vec3::new(
             self.offsets.offsets_vec[last_index].x,
             self.offsets.offsets_vec[last_index].y,
             0.0,
-        );
+        ) * translation.scale;
 
         // add new offset :cool:
         let offset: Vec2 = self.offsets.offsets_vec[sprite.index];
-        translation.translation += Vec3::new(offset.x, offset.y, 0.0);
+        translation.translation += Vec3::new(offset.x, offset.y, 0.0) * translation.scale;
     }
 }

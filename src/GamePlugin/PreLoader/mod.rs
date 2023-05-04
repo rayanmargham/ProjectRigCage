@@ -3,6 +3,7 @@ use std::time::Duration;
 use super::GameState;
 use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::prelude::*;
+use bevy::window::{PrimaryWindow, WindowResolution};
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 use bevy_tweening::lens::{SpriteColorLens, TransformScaleLens};
@@ -63,7 +64,10 @@ pub fn PreLoaderInit(
     mut commands: Commands,
     clock_img: Res<PreloadClockAsset>,
     mut settings: ResMut<bevy_framepace::FramepaceSettings>,
+    mut window: Query<&mut Window, With<PrimaryWindow>>
 ) {
+    let mut window = window.get_single_mut().unwrap();
+    window.resolution = WindowResolution::default();
     settings.limiter = bevy_framepace::Limiter::from_framerate(24.0);
     let tween = Tween::new(
         EaseFunction::SineInOut,
