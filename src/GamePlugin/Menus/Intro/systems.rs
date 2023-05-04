@@ -13,8 +13,11 @@ pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Condu
     let Some(bf) = texture_atlases.get_mut(&bfs) else { return };
     let xml = SpriteXMLBundle::new("assets/images/BOYFRIEND.xml".to_string(), &bfs, bf);
     match xml {
-        Some(c) =>
+        Some(mut c) =>
         {
+            c.spritexml.add_anim_from_prefix("BF idle dance".to_string(), true, 24).unwrap();
+            c.spritexml.set_anim("BF idle dance".to_string(), &mut c.sprite_sheet.sprite).unwrap();
+            c.spritexml.apply_offsets(&c.sprite_sheet.sprite, &mut c.sprite_sheet.transform); // apply inital offsets
             commands.spawn(c);
         },
         None =>
@@ -44,10 +47,3 @@ pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, mut writer:
     }
 }
 
-pub fn update_frame(mut query: Query<(&mut SpriteXML, &mut TextureAtlasSprite, &mut Transform), With<SpriteXML>>)
-{
-    for (mut xml, mut sprite, mut trans) in query.iter_mut()
-    {
-        xml.get_next_frame(&mut sprite, &mut trans);
-    }
-}

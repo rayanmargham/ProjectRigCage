@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_xml_rs::from_str;
@@ -31,6 +33,17 @@ fn default_i32() -> i32 {
 fn default_u32() -> u32 {
     0
 }
+
+
+pub struct XAnimation
+{
+	name: String,
+    idx: usize,
+	idx_range: Vec<usize>,
+	looped: bool,
+    should_go: bool,
+	timer: Timer
+}
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct XML {
     #[serde(rename = "SubTexture")]
@@ -42,12 +55,15 @@ pub struct Offsets {
     pub offsets_vec: Vec<Vec2>,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component)]
 pub struct SpriteXML {
     pub offsets: Offsets,
+    pub xml: XML,
+	pub animations: Vec<XAnimation>,
+	pub cur_anim: Option<usize>
 }
 
-#[derive(Bundle, Clone)]
+#[derive(Bundle)]
 pub struct SpriteXMLBundle {
     pub sprite_sheet: SpriteSheetBundle,
     pub spritexml: SpriteXML,
@@ -79,9 +95,7 @@ impl SpriteXMLBundle {
                         for texture in xml.subtexture.iter() {
                             let name = &texture.name;
 
-                            if !name.starts_with("BF idle dance") {
-                                continue;
-                            }
+                            
 
                             let rect = Rect::new(
                                 texture.x as f32,
@@ -102,6 +116,10 @@ impl SpriteXMLBundle {
                             sprite_sheet: sheet_bundle,
                             spritexml: SpriteXML {
                                 offsets: temp_offsets,
+                                xml,
+                                animations: Vec::new(),
+                                cur_anim: None,
+                                
                             },
                         });
                     }
@@ -117,6 +135,8 @@ impl SpriteXMLBundle {
         }
         return None;
     }
+
+    
 }
 
 impl SpriteXML {
@@ -141,5 +161,148 @@ impl SpriteXML {
         // add new offset :cool:
         let offset: Vec2 = self.offsets.offsets_vec[sprite.index];
         translation.translation += Vec3::new(offset.x, offset.y, 0.0) * translation.scale;
+    }
+    pub fn add_anim_from_prefix(&mut self, animationtoadd: String, looped: bool, fps: u16) -> Result<(), &str>
+    {
+        let fps_in_ms = 1.0 / fps as f64;
+        println!("{}", fps_in_ms);
+        let mut idx_rng = Vec::new();
+        for subtex in self.xml.subtexture.iter()
+        {
+            if !subtex.name.starts_with(&animationtoadd)
+            {
+                continue;
+            }
+            idx_rng.push(self.xml.subtexture.iter().position(|z| z == subtex).unwrap());
+            
+        }
+        if idx_rng.len() >= 1
+        {
+            self.animations.push(
+                XAnimation
+                {
+                    name: animationtoadd,
+                    idx_range: idx_rng,
+                    idx: 0,
+                    should_go: false,
+                    looped,
+                    timer: Timer::new(Duration::from_secs_f64(fps_in_ms), TimerMode::Repeating)
+                }
+            );
+            Ok(())
+        }
+        else {
+            Err("Failed to find Animation, Does it exist?")
+        }
+        
+    }
+    pub fn get_next_frame_of_anim(&mut self, sprite: &mut TextureAtlasSprite, translation: &mut Transform, anim_idx: usize)
+    {
+        let mut animation = &mut self.animations[anim_idx];
+        
+        if animation.idx >= animation.idx_range.len() - 1
+        {
+            
+            // out of bounds handle looped or whatever
+            if animation.looped
+            {
+                let last_index: usize = sprite.index;
+                animation.idx = 0;
+                sprite.index = animation.idx_range[animation.idx];
+
+                // reapply offsets
+                translation.translation -= Vec3::new(
+                    self.offsets.offsets_vec[last_index].x,
+                    self.offsets.offsets_vec[last_index].y,
+                    translation.translation.z,
+                ) * translation.scale;
+                let offset: Vec2 = self.offsets.offsets_vec[sprite.index];
+                translation.translation += Vec3::new(offset.x, offset.y, translation.translation.z) * translation.scale;
+            }
+            else {
+                return;
+            }
+        }
+        else {
+            
+            let last_index: usize = sprite.index;
+            if animation.should_go == true
+            {
+                animation.idx += 1;
+            }
+            else {
+                animation.should_go = true;
+            }
+            
+            sprite.index = animation.idx_range[animation.idx];
+
+            // reapply offsets (assumes you already applied offsets using apply_offsets() for the first frame if you just spawned the sprite)
+            translation.translation -= Vec3::new(
+                self.offsets.offsets_vec[last_index].x,
+                self.offsets.offsets_vec[last_index].y,
+                translation.translation.z,
+            ) * translation.scale;
+            let offset: Vec2 = self.offsets.offsets_vec[sprite.index];
+            translation.translation += Vec3::new(offset.x, offset.y, translation.translation.z) * translation.scale;
+
+        }
+    }
+
+    pub fn apply_offsets(&self, sprite: &TextureAtlasSprite, translation: &mut Transform)
+    {
+        let offset: Vec2 = self.offsets.offsets_vec[sprite.index];
+        translation.translation += Vec3::new(offset.x, offset.y, translation.translation.z) * translation.scale;
+    }
+
+    pub fn set_anim(&mut self, animationtoset: String, sprite: &mut TextureAtlasSprite) -> Result<(), &str>
+    {
+        let mut anim_idx: usize = 9999;
+
+        for i in self.animations.iter()
+        {
+            if !i.name.starts_with(&animationtoset)
+            {
+                continue;
+            }
+            
+            anim_idx = self.animations.iter().position(|z| z.name == i.name).unwrap();
+            break;
+        }
+        if anim_idx != 9999
+        {
+            self.cur_anim = Some(anim_idx);
+            sprite.index = self.animations[self.cur_anim.unwrap()].idx_range[0];
+            Ok(())
+        }
+        else {
+            Err("Couldn't Find Animation, Did you add it?")
+        }
+        
+    }
+}
+
+pub fn tick_animations(mut query: Query<(&mut SpriteXML, &mut Transform, &mut TextureAtlasSprite)>, time: Res<Time>)
+{
+    for (mut xml, mut translation, mut sprite) in query.iter_mut()
+    {
+        match xml.cur_anim
+        {
+            Some(idx) =>
+            {
+                
+                let animation = &mut xml.animations[idx];
+                animation.timer.tick(time.delta());
+
+                if animation.timer.just_finished()
+                {
+                    xml.get_next_frame_of_anim(&mut sprite, &mut translation, idx);
+                }
+
+            },
+            None =>
+            {
+
+            }
+        }
     }
 }
