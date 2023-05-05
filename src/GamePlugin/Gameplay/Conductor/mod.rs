@@ -39,7 +39,6 @@ pub enum ConductorEvents
     SectionHit,
     StepHit,
 }
-pub struct ConductorEvent(pub ConductorEvents);
 #[derive(Resource)]
 pub struct SongHandle(pub Handle<AudioInstance>);
 
@@ -215,7 +214,7 @@ impl Conductor
         self.stepCrochet = self.crochet / 4.0;
     }
 
-    pub fn update_beatstate(&mut self, mut writer: EventWriter<ConductorEvent>)
+    pub fn update_beatstate(&mut self, mut writer: EventWriter<ConductorEvents>)
     {
         let oldStep: i32 = self.curStep;
 
@@ -230,7 +229,7 @@ impl Conductor
                 if self.curStep % 4 == 0
                 {
                     println!("{}: BEAT HIT AT {} LOOOL", file!(), self.curBeat);
-                    writer.send(ConductorEvent(ConductorEvents::BeatHit));
+                    writer.send(ConductorEvents::BeatHit);
                 }
             }
             // I HATE PARTIALEQ 

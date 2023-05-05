@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use crate::{GamePlugin::{Gameplay::Conductor::{self, ConductorEvent, SongHandle}, PreLoader, Core::SpriteXML::{SpriteXMLBundle, SpriteXML}}};
+use crate::{GamePlugin::{Gameplay::Conductor::{self, ConductorEvents, SongHandle}, PreLoader, Core::SpriteXML::{SpriteXMLBundle, SpriteXML}}};
 
 pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Conductor>, audio: Res<Audio>, preloaded: Res<PreLoader::PreloadFunkinAssets>, mut texture_atlases: ResMut<Assets<TextureAtlas>>)
 {
@@ -15,8 +15,8 @@ pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Condu
     match xml {
         Some(mut c) =>
         {
-            c.spritexml.add_anim_from_prefix("BF idle dance".to_string(), true, 24).unwrap();
-            c.spritexml.set_anim("BF idle dance".to_string(), &mut c.sprite_sheet.sprite).unwrap();
+            c.spritexml.add_anim_from_prefix("BF Dead Loop".to_string(), false, 24).unwrap();
+            c.spritexml.set_anim("BF Dead Loop".to_string(), &mut c.sprite_sheet.sprite, true).unwrap();
             c.spritexml.apply_offsets(&c.sprite_sheet.sprite, &mut c.sprite_sheet.transform); // apply inital offsets
             commands.spawn(c);
         },
@@ -28,7 +28,7 @@ pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Condu
     }
 }
 
-pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, mut writer: EventWriter<ConductorEvent>, handle: Res<SongHandle>, audio_instances: Res<Assets<AudioInstance>>)
+pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, mut writer: EventWriter<ConductorEvents>, handle: Res<SongHandle>, audio_instances: Res<Assets<AudioInstance>>)
 {
     conductor.update_beatstate(writer);
     if let Some(instance) = audio_instances.get(&handle.0)
@@ -47,3 +47,23 @@ pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, mut writer:
     }
 }
 
+pub fn bf_idle(mut reader: EventReader<ConductorEvents>, mut query: Query<&mut SpriteXML, With<SpriteXML>>)
+{
+    for ev in reader.iter()
+    {
+        match ev
+        {
+            ConductorEvents::BeatHit =>
+            {
+                for mut xml in query.iter_mut()
+                {
+                    xml.reset_anim_idx();
+                }
+            }
+            _ =>
+            {
+
+            }
+        }
+    }
+}

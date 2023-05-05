@@ -42,7 +42,8 @@ pub struct XAnimation
 	idx_range: Vec<usize>,
 	looped: bool,
     should_go: bool,
-	timer: Timer
+	timer: Timer,
+    finished: bool
 }
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct XML {
@@ -165,7 +166,6 @@ impl SpriteXML {
     pub fn add_anim_from_prefix(&mut self, animationtoadd: String, looped: bool, fps: u16) -> Result<(), &str>
     {
         let fps_in_ms = 1.0 / fps as f64;
-        println!("{}", fps_in_ms);
         let mut idx_rng = Vec::new();
         for subtex in self.xml.subtexture.iter()
         {
@@ -186,7 +186,8 @@ impl SpriteXML {
                     idx: 0,
                     should_go: false,
                     looped,
-                    timer: Timer::new(Duration::from_secs_f64(fps_in_ms), TimerMode::Repeating)
+                    timer: Timer::new(Duration::from_secs_f64(fps_in_ms), TimerMode::Repeating),
+                    finished: false
                 }
             );
             Ok(())
@@ -220,6 +221,7 @@ impl SpriteXML {
                 translation.translation += Vec3::new(offset.x, offset.y, translation.translation.z) * translation.scale;
             }
             else {
+                animation.finished = true;
                 return;
             }
         }
@@ -253,8 +255,22 @@ impl SpriteXML {
         let offset: Vec2 = self.offsets.offsets_vec[sprite.index];
         translation.translation += Vec3::new(offset.x, offset.y, translation.translation.z) * translation.scale;
     }
-
-    pub fn set_anim(&mut self, animationtoset: String, sprite: &mut TextureAtlasSprite) -> Result<(), &str>
+    
+    pub fn reset_anim_idx(&mut self) -> Result<(), &str>
+    {
+        match self.cur_anim {
+            Some(idx) =>
+            {
+                self.animations[idx].idx = 0;
+                Ok(())
+            },
+            None =>
+            {
+                Err("There's no Current Animation!")
+            }
+        }
+    }
+    pub fn set_anim(&mut self, animationtoset: String, sprite: &mut TextureAtlasSprite, startatzero: bool) -> Result<(), &str>
     {
         let mut anim_idx: usize = 9999;
 
@@ -271,7 +287,11 @@ impl SpriteXML {
         if anim_idx != 9999
         {
             self.cur_anim = Some(anim_idx);
-            sprite.index = self.animations[self.cur_anim.unwrap()].idx_range[0];
+            if startatzero
+            {
+                sprite.index = self.animations[self.cur_anim.unwrap()].idx_range[0];
+            }
+            
             Ok(())
         }
         else {

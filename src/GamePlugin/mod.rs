@@ -15,7 +15,7 @@ impl Plugin for GamePlugin
     fn build(&self, app: &mut App) {
         app
             .init_resource::<Conductor::Conductor>()
-            .add_event::<Conductor::ConductorEvent>()
+            .add_event::<Conductor::ConductorEvents>()
             .add_state::<GameState>()
             .add_plugin(PreLoader::PreloaderPlugin)
             .add_plugin(Menus::MenusPlugin);
