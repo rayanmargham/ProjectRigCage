@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use crate::{GamePlugin::{Gameplay::Conductor::{self, ConductorEvents, SongHandle}, PreLoader, Core::SpriteXML::{SpriteXMLBundle, SpriteXML}}};
+use crate::{GamePlugin::{Gameplay::Conductor::{self, ConductorEvents, SongHandle}, PreLoader, Core::SpriteXML::{SpriteXMLBundle, SpriteXML}, Menus::Letters::LetterBundle}};
 
 pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Conductor>, audio: Res<Audio>, preloaded: Res<PreLoader::PreloadFunkinAssets>, mut texture_atlases: ResMut<Assets<TextureAtlas>>)
 {
@@ -15,9 +15,10 @@ pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Condu
     match xml {
         Some(mut c) =>
         {
-            c.spritexml.add_anim_from_prefix("BF Dead Loop".to_string(), false, 24).unwrap();
-            c.spritexml.set_anim("BF Dead Loop".to_string(), &mut c.sprite_sheet.sprite, true).unwrap();
+            c.spritexml.add_anim_from_prefix("BF idle".to_string(), false, 24).unwrap();
+            c.spritexml.set_anim("BF idle".to_string(), &mut c.sprite_sheet.sprite, true).unwrap();
             c.spritexml.apply_offsets(&c.sprite_sheet.sprite, &mut c.sprite_sheet.transform); // apply inital offsets
+            LetterBundle::new("friday".to_string(), &mut commands, &preloaded, &mut texture_atlases, Transform::from_xyz(-50.0, 0.0, 1.0));
             commands.spawn(c);
         },
         None =>

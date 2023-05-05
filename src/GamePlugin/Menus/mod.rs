@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 mod Intro;
 use Intro::IntroPlugin;
-
+pub mod Letters;
 pub struct MenusPlugin;
 
 impl Plugin for MenusPlugin
