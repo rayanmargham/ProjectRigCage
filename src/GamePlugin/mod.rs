@@ -5,6 +5,7 @@ pub mod PreLoader;
 pub mod Menus;
 pub mod Core;
 use Gameplay::Conductor;
+use bevy_sprite3d::Sprite3dPlugin;
 
 use self::{GameStates::GameState};
 
@@ -17,6 +18,7 @@ impl Plugin for GamePlugin
             .init_resource::<Conductor::Conductor>()
             .add_event::<Conductor::ConductorEvents>()
             .add_state::<GameState>()
+            .add_plugin(Sprite3dPlugin)
             .add_plugin(PreLoader::PreloaderPlugin)
             .add_plugin(Menus::MenusPlugin);
             

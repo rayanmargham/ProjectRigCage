@@ -1,25 +1,34 @@
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use crate::{GamePlugin::{Gameplay::Conductor::{self, ConductorEvents, SongHandle}, PreLoader, Core::SpriteXML::{SpriteXMLBundle, SpriteXML}, Menus::Letters::LetterBundle}};
+use bevy_sprite3d::Sprite3dParams;
+use crate::{GamePlugin::{Gameplay::Conductor::{self, ConductorEvents, SongHandle}, PreLoader, Core::SpriteXML::*, Menus::Letters::LetterBundle}};
 
-pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Conductor>, audio: Res<Audio>, preloaded: Res<PreLoader::PreloadFunkinAssets>, mut texture_atlases: ResMut<Assets<TextureAtlas>>)
+pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Conductor>, audio: Res<Audio>, preloaded: Res<PreLoader::PreloadFunkinAssets>, mut sprite_params: Sprite3dParams)
 {
     
     let handle = audio.play(preloaded.freaky.clone()).handle();
     conductor.changeBPM(102.0);
     commands.insert_resource(SongHandle(handle));
 
-    let bfs = texture_atlases.add(TextureAtlas::new_empty(preloaded.bf.clone(), Vec2::new(8192.0, 4096.0)));
-    let Some(bf) = texture_atlases.get_mut(&bfs) else { return };
+    let bfs = sprite_params.atlases.add(TextureAtlas::new_empty(preloaded.bf.clone(), Vec2::new(8192.0, 4096.0)));
+    let Some(bf) = sprite_params.atlases.get_mut(&bfs) else { return };
     let xml = SpriteXMLBundle::new("assets/images/BOYFRIEND.xml".to_string(), &bfs, bf);
+    let mut cool = SpriteXMLBundle3D::new("assets/images/BOYFRIEND.xml".to_string(), &bfs, &mut sprite_params, true).unwrap();
+    
     match xml {
         Some(mut c) =>
         {
             c.spritexml.add_anim_from_prefix("BF idle".to_string(), false, 24).unwrap();
+            cool.spritexml.add_anim_from_prefix("BF idle".to_string(), true, 24).unwrap();
             c.spritexml.set_anim("BF idle".to_string(), &mut c.sprite_sheet.sprite, true).unwrap();
+            cool.spritexml.set_anim("BF idle".to_string(), &mut cool.sprite_sheet.params, true).unwrap();
             c.spritexml.apply_offsets(&c.sprite_sheet.sprite, &mut c.sprite_sheet.transform); // apply inital offsets
-            LetterBundle::new("friday".to_string(), &mut commands, &preloaded, &mut texture_atlases, Transform::from_xyz(-50.0, 0.0, 1.0));
+            cool.spritexml.apply_offsets(&cool.sprite_sheet.params, &mut cool.sprite_sheet.pbr.transform);
+            cool.sprite_sheet.pbr.transform.translation.z = -5.0;
+            c.sprite_sheet.transform.translation.x += 400.0;
+            LetterBundle::new("friday".to_string(), &mut commands, &preloaded, &mut sprite_params.atlases, Transform::from_xyz(-50.0, 0.0, 1.0));
             commands.spawn(c);
+            commands.spawn(cool);
         },
         None =>
         {

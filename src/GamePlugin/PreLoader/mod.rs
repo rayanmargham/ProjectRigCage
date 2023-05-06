@@ -88,7 +88,7 @@ pub fn PreLoaderInit(
         },
     );
     // Spawn a Basic Camera, Nothing Fancy just for UI
-
+    commands.spawn(Camera3dBundle::default());
     commands.spawn(Camera2dBundle {
         projection: OrthographicProjection {
             scaling_mode: bevy::render::camera::ScalingMode::Fixed {
@@ -99,14 +99,16 @@ pub fn PreLoaderInit(
         },
         camera: Camera {
             order: 1,
+            
             ..default()
         },
         camera_2d: Camera2d {
-            clear_color: ClearColorConfig::Custom(Color::BLACK),
+            clear_color: ClearColorConfig::None,
             ..default()
         },
         ..default()
     });
+    
     commands
         .spawn((
             SpriteBundle {
