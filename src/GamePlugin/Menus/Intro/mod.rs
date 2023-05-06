@@ -12,7 +12,6 @@ impl Plugin for IntroPlugin
             .add_system(systems::intro_init.in_schedule(OnEnter(GameState::Intro)))
             .add_system(SpriteXML::tick_animations.in_set(OnUpdate(GameState::Intro)))
             .add_system(SpriteXML::tick_animations_3D.in_set(OnUpdate(GameState::Intro)))
-            .add_system(systems::bf_idle.in_set(OnUpdate(GameState::Intro)).after(systems::handle_beatstate))
             .add_system(systems::handle_beatstate.in_set(OnUpdate(GameState::Intro)));
     }
 }
