@@ -41,8 +41,6 @@ pub struct PreloadFunkinAssets {
     // TODO: Add support for streaming audio
     #[asset(path = "audio/freaky/freaky.ogg")]
     pub freaky: Handle<AudioSource>,
-    #[asset(path = "images/BOYFRIEND.png")]
-    pub bf: Handle<Image>,
     #[asset(path = "images/alphabet.png")]
     pub alphabet: Handle<Image>
 }
@@ -88,7 +86,16 @@ pub fn PreLoaderInit(
         },
     );
     // Spawn a Basic Camera, Nothing Fancy just for UI
-    commands.spawn(Camera3dBundle::default());
+    commands.spawn(Camera3dBundle
+    {
+        camera_3d: Camera3d
+        {
+            clear_color: ClearColorConfig::Custom(Color::BLACK),
+            ..default()
+        },
+        tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::None, // fixes colors looking greyish
+        ..default()
+    });
     commands.spawn(Camera2dBundle {
         projection: OrthographicProjection {
             scaling_mode: bevy::render::camera::ScalingMode::Fixed {

@@ -25,7 +25,7 @@ pub struct Conductor
     stepsToDo: i32,
 
     curStep: i32,
-    curBeat: i32,
+    pub curBeat: i32,
 
     curDecStep: f32,
     curDecBeat: f32,
