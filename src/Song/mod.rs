@@ -3,9 +3,9 @@ use std::fs;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct sectionNote
 {
-    posMS: f32,
+    posMS: f64,
     strum: i32, // Arrow Type
-    lengthNote: f32
+    lengthNote: f64
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -13,12 +13,12 @@ pub struct SwaggersSection
 {
     pub sectionNotes: Vec<sectionNote>,
     #[serde(default = "default_beats")]
-    pub sectionBeats: f32,
+    pub sectionBeats: f64,
     #[serde(default = "default_section")]
     pub typeOfSection: i32,
     pub mustHitSection: bool,
     #[serde(default = "default_bpm")]
-    pub bpm: f32,
+    pub bpm: f64,
     #[serde(default = "default_changebpm")]
     pub changeBPM: bool,
     #[serde(default = "default_altanim")]
@@ -43,11 +43,11 @@ fn default_section() -> i32
 {
     0
 }
-fn default_bpm() -> f32
+fn default_bpm() -> f64
 {
     -1.0
 }
-fn default_beats() -> f32
+fn default_beats() -> f64
 {
     4.0
 }
@@ -63,9 +63,9 @@ pub struct SwagSong
     // java more like my ass LOOL
     pub song: String,
     pub notes: Vec<SwaggersSection>,
-    pub bpm: f32,
+    pub bpm: f64,
     pub needsVoices: bool,
-    pub speed: f32,
+    pub speed: f64,
 
     pub player1: String,
     pub player2: String,

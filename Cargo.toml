@@ -24,3 +24,4 @@ bevy_tweening = "0.7.0"
 serde-xml-rs = "0.6.0"
 bevy_framepace = "^0.12"
 bevy_sprite3d = {git = "https://github.com/rayanmargham/bevy_sprite3d"}
+rand = "0.8.5"

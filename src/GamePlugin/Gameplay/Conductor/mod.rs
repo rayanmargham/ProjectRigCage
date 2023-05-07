@@ -5,21 +5,21 @@ use crate::Song::SwagSong;
 pub struct BPMChangeEvent 
 {
     stepTime: i32,            // time in steps (16th notes)
-    songTime: f32,            // time in songTime (explained further below)
-    bpm: f32,                 // bpm to change to
-    stepCrochet: Option<f32>, // optional variable for the stepCrochet
+    songTime: f64,            // time in songTime (explained further below)
+    bpm: f64,                 // bpm to change to
+    stepCrochet: Option<f64>, // optional variable for the stepCrochet
 }
 #[derive(Resource)]
 pub struct Conductor 
 {
-    bpm: f32,         // beats per minute
-    crochet: f32,     // beats in milliseconds
-    stepCrochet: f32, // "steps" (16th notes in music notation) in MS
-    pub songPos: f32,     // position of the song in MS
+    bpm: f64,         // beats per minute
+    crochet: f64,     // beats in milliseconds
+    stepCrochet: f64, // "steps" (16th notes in music notation) in MS
+    pub songPos: f64,     // position of the song in MS
     // lastSongPos is completely useless lmaoooo the game's code doesn't even utilize
     // it completely also btw this nvchad line editing thing sucks lmaoooo
-    offset: f32, // used to offset the song position if you ever wanted to use this lolll
-    safeZoneOffset: f32, // TODO: Comment this lmao
+    offset: f64, // used to offset the song position if you ever wanted to use this lolll
+    safeZoneOffset: f64, // TODO: Comment this lmao
     bpmChangeMap: Vec<BPMChangeEvent>, // vec of BPMChangeEvent's
     curSection: i32,
     stepsToDo: i32,
@@ -27,8 +27,8 @@ pub struct Conductor
     curStep: i32,
     pub curBeat: i32,
 
-    curDecStep: f32,
-    curDecBeat: f32,
+    curDecStep: f64,
+    curDecBeat: f64,
 
     pub song: Option<SwagSong>
 }
@@ -99,7 +99,7 @@ impl Conductor
         }
         return lastChange;
     }
-    fn getBPMFromSeconds(&self, time: f32) -> BPMChangeEvent
+    fn getBPMFromSeconds(&self, time: f64) -> BPMChangeEvent
     {
         let mut lastChange = BPMChangeEvent 
         {
@@ -122,14 +122,14 @@ impl Conductor
         return lastChange;
     }
 
-    fn beatToSeconds(&self, beat: f32) -> f32
+    fn beatToSeconds(&self, beat: f64) -> f64
     {
         let step = (beat * 4.0) as i32;
         let lastChange = self.getBPMFromStep(step);
-        return lastChange.songTime + (((step - lastChange.stepTime) as f32) / (lastChange.bpm / 60.0)/4.0) * 1000.0;
+        return lastChange.songTime + (((step - lastChange.stepTime) as f64) / (lastChange.bpm / 60.0)/4.0) * 1000.0;
     }
 
-    fn getStep(&self, time: f32) -> f32
+    fn getStep(&self, time: f64) -> f64
     {
         let lastChange = self.getBPMFromSeconds(time);
         match lastChange.stepCrochet
@@ -144,7 +144,7 @@ impl Conductor
             }
         }
     }
-    fn getStepRounded(&self, time: f32) -> f32
+    fn getStepRounded(&self, time: f64) -> f64
     {
         let lastChange = self.getBPMFromSeconds(time);
         match lastChange.stepCrochet
@@ -160,15 +160,15 @@ impl Conductor
         }
     }
 
-    fn getBeat(&self, time: f32) -> i32
+    fn getBeat(&self, time: f64) -> i32
     {
         return (self.getStep(time) as i32) / 4;
     }
-    fn getBeatRounded(&self, time: f32) -> i32
+    fn getBeatRounded(&self, time: f64) -> i32
     {
         return (self.getStepRounded(time).floor() as i32) / 4;
     }
-    fn calculateCrochet(bpm: f32) -> f32
+    fn calculateCrochet(bpm: f64) -> f64
     {
         return (60.0/bpm)*1000.0
     }
@@ -185,9 +185,9 @@ impl Conductor
     }
     pub fn mapBPMChanges(&mut self)
     {
-        let mut curBPM: f32 = self.song.as_ref().unwrap().bpm;
+        let mut curBPM: f64 = self.song.as_ref().unwrap().bpm;
         let mut totalSteps: i32 = 0;
-        let mut totalPos: f32 = 0.0;
+        let mut totalPos: f64 = 0.0;
 
         for i in 0..self.song.as_ref().unwrap().notes.len()
         {
@@ -199,14 +199,14 @@ impl Conductor
             }
             let deltaSteps: i32 = self.getSectionBeats(i as i32) * 4;
             totalSteps += deltaSteps;
-            totalPos += ((60.0 / curBPM) * 1000.0 / 4.0) * (deltaSteps as f32);
+            totalPos += ((60.0 / curBPM) * 1000.0 / 4.0) * (deltaSteps as f64);
             println!("{}: Mapping BPM...", file!());
 
         }
         println!("{}: New BPM Map BUDDY!", file!());
     }
     
-    pub fn changeBPM(&mut self, newBpm: f32)
+    pub fn changeBPM(&mut self, newBpm: f64)
     {
         self.bpm = newBpm;
         
@@ -226,9 +226,9 @@ impl Conductor
             if self.curStep > 0
             {
                 // step hit
+                writer.send(ConductorEvents::StepHit);
                 if self.curStep % 4 == 0
                 {
-                    println!("{}: BEAT HIT AT {} LOOOL", file!(), self.curBeat);
                     writer.send(ConductorEvents::BeatHit);
                 }
             }
@@ -257,7 +257,7 @@ impl Conductor
         let lastChange = self.getBPMFromSeconds(self.songPos);
 
         let shit = ((self.songPos /* - Prefs.noteOffset*/) - lastChange.songTime) / lastChange.stepCrochet.unwrap();
-        self.curDecStep = lastChange.stepTime as f32 + shit;
+        self.curDecStep = lastChange.stepTime as f64 + shit;
         self.curStep = lastChange.stepTime + shit.floor() as i32;
     }
 
@@ -267,7 +267,7 @@ impl Conductor
         self.curDecBeat = self.curDecStep / 4.0;
     }
 
-    fn getBeatsOnSection(&self) -> f32
+    fn getBeatsOnSection(&self) -> f64
     {
         if (self.curSection as usize) < self.song.as_ref().unwrap().notes.len()
         {
@@ -285,7 +285,7 @@ impl Conductor
         while self.curStep >= self.stepsToDo
         {
             self.curSection += 1;
-            let beats: f32 = self.getBeatsOnSection();
+            let beats: f64 = self.getBeatsOnSection();
             self.stepsToDo += (beats * 4.0).round() as i32;
             // section hit
             if self.song.as_ref().unwrap().notes[self.curSection as usize].changeBPM
