@@ -45,7 +45,7 @@ pub struct SongHandle(pub Handle<AudioInstance>);
 
 impl FromWorld for Conductor
 {
-    fn from_world(world: &mut World) -> Self 
+    fn from_world(_world: &mut World) -> Self 
     {
         println!("{}: Init!", file!());
         Conductor::new()
@@ -239,11 +239,11 @@ impl Conductor
                 {
                     if oldStep < self.curStep
                     {
-                        self.updateSection()
+                        self.updateSection(writer)
                     }
                     else 
                     {
-                        self.rollbackSection()
+                        self.rollbackSection(writer)
                     }
                 }
                 _ => {}
@@ -279,7 +279,7 @@ impl Conductor
         }
     }
 
-    fn updateSection(&mut self)
+    fn updateSection(&mut self, mut writer: EventWriter<ConductorEvents>)
     {
         if self.stepsToDo < 1 {self.stepsToDo = (self.getBeatsOnSection() * 4.0).round() as i32}
         while self.curStep >= self.stepsToDo
@@ -291,11 +291,12 @@ impl Conductor
             if self.song.as_ref().unwrap().notes[self.curSection as usize].changeBPM
             {
                 self.changeBPM(self.song.as_ref().unwrap().notes[self.curSection as usize].bpm);
+                writer.send(ConductorEvents::SectionHit);
                 println!("{}: Changing BPM!", file!());
             }
         }
     }
-    fn rollbackSection(&mut self)
+    fn rollbackSection(&mut self, mut writer: EventWriter<ConductorEvents>)
     {
         if self.curStep < 0 {return};
         let lastSection: i32 = self.curSection;
@@ -307,11 +308,12 @@ impl Conductor
             if i < self.song.as_ref().unwrap().notes.len()
             {
                 self.stepsToDo += (self.getBeatsOnSection() * 4.0).round() as i32;
-                if (self.stepsToDo > self.curStep) {break}
+                if self.stepsToDo > self.curStep {break}
                 self.curSection += 1;
                 
             }
         }
+        if self.curSection > lastSection {writer.send(ConductorEvents::SectionHit)};
 
     }
 
