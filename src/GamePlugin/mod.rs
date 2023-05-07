@@ -7,7 +7,7 @@ pub mod Core;
 use Gameplay::Conductor;
 use bevy_sprite3d::Sprite3dPlugin;
 
-use self::{GameStates::GameState};
+use self::{GameStates::GameState, Gameplay::GameplayPlugin};
 
 pub struct GamePlugin;
 
@@ -20,6 +20,7 @@ impl Plugin for GamePlugin
             .add_state::<GameState>()
             .add_plugin(Sprite3dPlugin)
             .add_plugin(PreLoader::PreloaderPlugin)
+            .add_plugin(GameplayPlugin)
             .add_plugin(Menus::MenusPlugin);
             
     }

@@ -13,6 +13,7 @@ impl Plugin for TitlePlugin
                 {
                     epic.bumpin = asset_server.load("images/cool.png");
                     epic.yourgf = asset_server.load("images/gfDanceTitle.png");
+                    epic.pressenter = asset_server.load("images/titleEnter.png");
                     
                 })
                 .insert_resource(systems::FunkinAssets::default())

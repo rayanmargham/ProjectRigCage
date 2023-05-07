@@ -42,7 +42,9 @@ pub struct PreloadFunkinAssets {
     #[asset(path = "audio/freaky/freaky.ogg")]
     pub freaky: Handle<AudioSource>,
     #[asset(path = "images/alphabet.png")]
-    pub alphabet: Handle<Image>
+    pub alphabet: Handle<Image>,
+    #[asset(path = "audio/effects/confirmMenu.ogg")]
+    pub confirm: Handle<AudioSource>
 }
 #[derive(AssetCollection, Resource)]
 pub struct PreloadClockAsset {
