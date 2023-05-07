@@ -88,7 +88,6 @@ impl LetterBundle3D
     {
         
         let bfs = sprite_params.atlases.add(TextureAtlas::new_empty(preloaded.alphabet.clone(), Vec2::new(1024.0, 695.0)));
-        let Some(bf) = sprite_params.atlases.get_mut(&bfs) else { return None};
         let mut idx = 0;
         let mut entit: Entity = Entity::from_raw(0);
         let mut off = 0.5;

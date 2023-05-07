@@ -68,7 +68,7 @@ pub fn PreLoaderInit(
 ) {
     let mut window = window.get_single_mut().unwrap();
     window.resolution = WindowResolution::default();
-    settings.limiter = bevy_framepace::Limiter::from_framerate(60.0);
+    settings.limiter = bevy_framepace::Limiter::from_framerate(144.0);
     let tween = Tween::new(
         EaseFunction::SineInOut,
         Duration::from_millis(1000),

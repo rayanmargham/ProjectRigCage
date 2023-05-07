@@ -24,10 +24,10 @@ pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Condu
     let handle = audio.play(preloaded.freaky.clone()).looped().with_volume(0.7).fade_in(AudioTween::new(Duration::from_secs_f64(0.7) ,AudioEasing::Linear)).handle();
     conductor.changeBPM(102.0);
     commands.insert_resource(SongHandle(handle));
-    atlases.add(TextureAtlas::new_empty(preloaded.alphabet.clone(), Vec2::new(1024.0, 695.0)));
     let collection = read_epic_text("assets/data/intro/introtext.txt");
     let mut rng = thread_rng();
-    let rand = rng.gen_range(0..collection.len() - 1);
+    let rand = rng.gen_range(0..collection.len());
+    
     commands.insert_resource(wackymuffin
     {
         text1: collection[rand][0].clone(),
@@ -36,7 +36,7 @@ pub fn intro_init(mut commands: Commands, mut conductor: ResMut<Conductor::Condu
     
 }
 
-pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, writer: EventWriter<ConductorEvents>, handle: Res<SongHandle>, audio_instances: Res<Assets<AudioInstance>>)
+pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, writer: EventWriter<ConductorEvents>, handle: Res<SongHandle>, audio_instances: Res<Assets<AudioInstance>>, time: Res<Time>)
 {
     conductor.update_beatstate(writer);
     if let Some(instance) = audio_instances.get(&handle.0)
@@ -45,7 +45,7 @@ pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, writer: Eve
         {
             PlaybackState::Playing { position } =>
             {
-                conductor.songPos = position * 1000.0;
+                conductor.songPos = (position * 1000.0) + time.delta_seconds_f64();
             }
             _ =>
             {
@@ -58,15 +58,19 @@ pub fn handle_beatstate(mut conductor: ResMut<Conductor::Conductor>, writer: Eve
 pub fn read_epic_text(path: &str) -> Vec<Vec<String>>
 {
     let cool = std::fs::read_to_string(path).unwrap();
+    let yo: Vec<String> = cool.replace("\r", "").split("\n").map(|z| z.to_string()).collect();
     let mut swagger: Vec<Vec<String>> = Vec::new();
-    for i in cool.lines()
+    
+    for i in yo.iter()
     {
-        swagger.push(i.split("--").map(String::from).collect());
+        swagger.push(i.split("--").map(|z| z.to_string()).collect());
     }
+    println!("{:?}", swagger);
     return swagger;
 }
-pub fn freakybeathit(mut next_state: ResMut<NextState<GameState>>, ninjapuffin: Res<wackymuffin>, brand: Res<Branding>, conduct: Res<Conductor::Conductor>, mut reader: EventReader<ConductorEvents>, mut commands: Commands, query: Query<Entity, With<FreakyText>>, mut sprite_params: Sprite3dParams, preloaded: Res<PreLoader::PreloadFunkinAssets>)
+pub fn freakybeathit(mut next_state: ResMut<NextState<GameState>>, ninjapuffin: Res<wackymuffin>, brand: Res<Branding>, conduct: Res<Conductor::Conductor>, mut reader: EventReader<ConductorEvents>, mut commands: Commands, query: Query<Entity, With<FreakyText>>, mut sprite_params: Sprite3dParams, preloaded: Res<PreLoader::PreloadFunkinAssets>, input: Res<Input<KeyCode>>)
 {
+    
     for ev in reader.iter()
     {
         match ev {
@@ -163,6 +167,9 @@ pub fn freakybeathit(mut next_state: ResMut<NextState<GameState>>, ninjapuffin: 
                             // bozo is gone lmaoo
                             commands.entity(bye).despawn_recursive();
                         }
+                        commands.remove_resource::<wackymuffin>();
+                        commands.remove_resource::<Branding>();
+                        
                         next_state.set(GameState::Title);
                         
                     }
@@ -179,5 +186,15 @@ pub fn freakybeathit(mut next_state: ResMut<NextState<GameState>>, ninjapuffin: 
             }
             
         }
+    }
+    if input.just_pressed(KeyCode::Return)
+    {
+        for bye in query.iter()
+        {
+            commands.entity(bye).despawn_recursive();
+        }
+        commands.remove_resource::<wackymuffin>();
+        commands.remove_resource::<Branding>();
+        next_state.set(GameState::Title);
     }
 }

@@ -204,6 +204,47 @@ impl SpriteXML {
             Err("Failed to find Animation, Does it exist?")
         }
     }
+    pub fn add_anim_from_indices(
+        &mut self,
+        animationtoadd: String,
+        looped: bool,
+        fps: u16,
+        indices: &[u16]
+    ) -> Result<(), &str> {
+        let fps_in_ms = 1.0 / fps as f64;
+        let mut idx_rng = Vec::new();
+        let mut finished = Vec::new();
+        for subtex in self.xml.subtexture.iter() {
+            if !subtex.name.starts_with(&animationtoadd) {
+                continue;
+            }
+            idx_rng.push(
+                self.xml
+                    .subtexture
+                    .iter()
+                    .position(|z| z == subtex)
+                    .unwrap(),
+            );
+        }
+        for i in indices.iter()
+        {
+            finished.push(idx_rng[*i as usize]);
+        }
+        if idx_rng.len() >= 1 {
+            self.animations.push(XAnimation {
+                name: animationtoadd,
+                idx_range: finished,
+                idx: 0,
+                should_go: false,
+                looped,
+                timer: Timer::new(Duration::from_secs_f64(fps_in_ms), TimerMode::Repeating),
+                finished: false,
+            });
+            Ok(())
+        } else {
+            Err("Failed to find Animation, Does it exist?")
+        }
+    }
     pub fn get_next_frame_of_anim(
         &mut self,
         sprite: &mut TextureAtlasSprite,
@@ -409,6 +450,55 @@ impl SpriteXML3D {
             self.animations.push(XAnimation {
                 name: animationtoadd,
                 idx_range: idx_rng,
+                idx: 0,
+                should_go: false,
+                looped,
+                timer: Timer::new(Duration::from_secs_f64(fps_in_ms), TimerMode::Repeating),
+                finished: false,
+            });
+            Ok(())
+        } else {
+            Err("Failed to find Animation, Does it exist?")
+        }
+    }
+    pub fn add_anim_from_indices(
+        &mut self,
+        animationtoadd: String,
+        looped: bool,
+        fps: u16,
+        indices: &[u16],
+        animationname: String
+    ) -> Result<(), &str> {
+        let fps_in_ms = 1.0 / fps as f64;
+        let mut idx_rng = Vec::new();
+        let mut finished = Vec::new();
+        for subtex in self.xml.subtexture.iter() {
+            if !subtex.name.starts_with(&animationtoadd) {
+                continue;
+            }
+            idx_rng.push(
+                self.xml
+                    .subtexture
+                    .iter()
+                    .position(|z| z == subtex)
+                    .unwrap(),
+            );
+        }
+        for i in indices.iter()
+        {
+            if *i != 0
+            {
+                finished.push(idx_rng[*i as usize - 1]);
+            }
+            else {
+                finished.push(idx_rng[*i as usize]);
+            }
+            
+        }
+        if idx_rng.len() >= 1 {
+            self.animations.push(XAnimation {
+                name: animationname,
+                idx_range: finished,
                 idx: 0,
                 should_go: false,
                 looped,
