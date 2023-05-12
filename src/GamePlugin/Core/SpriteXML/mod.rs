@@ -209,7 +209,7 @@ impl SpriteXML {
         animationtoadd: String,
         looped: bool,
         fps: u16,
-        indices: &[u16]
+        indices: &[u16],
     ) -> Result<(), &str> {
         let fps_in_ms = 1.0 / fps as f64;
         let mut idx_rng = Vec::new();
@@ -226,8 +226,7 @@ impl SpriteXML {
                     .unwrap(),
             );
         }
-        for i in indices.iter()
-        {
+        for i in indices.iter() {
             finished.push(idx_rng[*i as usize]);
         }
         if idx_rng.len() >= 1 {
@@ -467,7 +466,7 @@ impl SpriteXML3D {
         looped: bool,
         fps: u16,
         indices: &[u16],
-        animationname: String
+        animationname: String,
     ) -> Result<(), &str> {
         let fps_in_ms = 1.0 / fps as f64;
         let mut idx_rng = Vec::new();
@@ -484,16 +483,12 @@ impl SpriteXML3D {
                     .unwrap(),
             );
         }
-        for i in indices.iter()
-        {
-            if *i != 0
-            {
+        for i in indices.iter() {
+            if *i != 0 {
                 finished.push(idx_rng[*i as usize - 1]);
-            }
-            else {
+            } else {
                 finished.push(idx_rng[*i as usize]);
             }
-            
         }
         if idx_rng.len() >= 1 {
             self.animations.push(XAnimation {

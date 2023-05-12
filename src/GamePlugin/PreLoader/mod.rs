@@ -44,7 +44,7 @@ pub struct PreloadFunkinAssets {
     #[asset(path = "images/alphabet.png")]
     pub alphabet: Handle<Image>,
     #[asset(path = "audio/effects/confirmMenu.ogg")]
-    pub confirm: Handle<AudioSource>
+    pub confirm: Handle<AudioSource>,
 }
 #[derive(AssetCollection, Resource)]
 pub struct PreloadClockAsset {
@@ -66,7 +66,7 @@ pub fn PreLoaderInit(
     mut commands: Commands,
     clock_img: Res<PreloadClockAsset>,
     mut settings: ResMut<bevy_framepace::FramepaceSettings>,
-    mut window: Query<&mut Window, With<PrimaryWindow>>
+    mut window: Query<&mut Window, With<PrimaryWindow>>,
 ) {
     let mut window = window.get_single_mut().unwrap();
     window.resolution = WindowResolution::default();
@@ -88,10 +88,8 @@ pub fn PreLoaderInit(
         },
     );
     // Spawn a Basic Camera, Nothing Fancy just for UI
-    commands.spawn(Camera3dBundle
-    {
-        camera_3d: Camera3d
-        {
+    commands.spawn(Camera3dBundle {
+        camera_3d: Camera3d {
             clear_color: ClearColorConfig::Custom(Color::BLACK),
             ..default()
         },
@@ -108,7 +106,7 @@ pub fn PreLoaderInit(
         },
         camera: Camera {
             order: 1,
-            
+
             ..default()
         },
         camera_2d: Camera2d {
@@ -117,7 +115,7 @@ pub fn PreLoaderInit(
         },
         ..default()
     });
-    
+
     commands
         .spawn((
             SpriteBundle {
