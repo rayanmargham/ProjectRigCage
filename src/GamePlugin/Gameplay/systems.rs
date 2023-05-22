@@ -80,13 +80,58 @@ fn start_ze_down(
     playstate_information.startedcountdown = true;
     conductor.songPos = -conductor.crochet * 5.0;
 
-    commands.insert_resource(CountDownTimer(Timer::new(Duration::from_millis(conductor.crochet), TimerMode::Once), 5));
+    commands.insert_resource(CountDownTimer(Timer::new(Duration::from_millis(conductor.crochet as u64), TimerMode::Once), 0));
 }
 
-fn countdown(
+pub fn countdown(
     mut commands: Commands,
-    query: Query<(Entity, &mut CountDownTimer), With<CountDownTimer>>
+    countdown: Option<ResMut<CountDownTimer>>,
+    time: Res<Time>
 )
 {
-    
+    match countdown
+    {
+        Some(mut c) =>
+        {
+            // i wanna cut myself deeply in my skin and bleed out
+            c.0.tick(time.delta());
+            if c.0.just_finished()
+            {
+                match c.1
+                {
+                    0 =>
+                    {
+                        info!("3");
+                    },
+                    1 =>
+                    {
+                        info!("2");
+                    },
+                    2 =>
+                    {
+                        info!("1");
+                    },
+                    3 =>
+                    {
+                        info!("go");
+                    },
+                    
+                    _ =>
+                    {
+                        
+                    }
+                }
+                if c.1 != 5
+                {
+                    c.0.reset();
+                    c.1 += 1;
+                }
+            }
+            
+        },
+        None =>
+        {
+            
+        }
+    }
 }
