@@ -80,7 +80,7 @@ fn start_ze_down(
     playstate_information.startedcountdown = true;
     conductor.songPos = -conductor.crochet * 5.0;
 
-    commands.insert_resource(CountDownTimer(Timer::new(Duration::from_millis(conductor.crochet), TimerMode::Once)));
+    commands.insert_resource(CountDownTimer(Timer::new(Duration::from_millis(conductor.crochet), TimerMode::Once), 5));
 }
 
 fn countdown(
